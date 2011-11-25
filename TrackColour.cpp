@@ -486,8 +486,12 @@ int main()
 //     cout<<"ROI AVG: "<<ROIavg[0]<<" "<<ROIavg[1]<<" "<<ROIavg[2]<<endl;
 //     cout<<"ROI SD:  "<<sd[0]<<" "<<sd[1]<<" "<<sd[2]<<endl;
 //     cout<<"HSV SDV: "<<hsv_sdv.val[0]<<" "<<hsv_sdv.val[1]<<" "<<hsv_sdv.val[2]<<endl;
-    cvNamedWindow("ROI");
-    cvShowImage("ROI", sub_img);
+    
+//SHOW THE ROI IN A NEW WINDOW:
+//     cvNamedWindow("ROI");
+//     cvShowImage("ROI", sub_img);
+    
+    
 //   cvNamedWindow("video");
 //   cvNamedWindow("thresh");
   
