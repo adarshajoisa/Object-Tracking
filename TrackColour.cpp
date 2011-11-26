@@ -482,6 +482,7 @@ int main()
   
   
   int choice;
+  cout<<"Keep the object to be tracked within the yellow square and hit Space. It works best if the object fills the yellow square completely and if it is of a bright color. See that there's no other object of the same color in the camera's field of view"<<endl<<endl;
   cout<<"What do you want to do?"<<endl;
   cout<<"1. Control the mouse."<<endl;
   cout<<"2. Control arrow keys."<<endl;
