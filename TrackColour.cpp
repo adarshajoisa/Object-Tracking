@@ -17,76 +17,31 @@
 
 using namespace std;
 
-IplImage* GetThresholdedImage(IplImage* img, CvScalar hsv_min, CvScalar hsv_max)
+IplImage* GetThresholdedImage(IplImage* imgHSV, CvScalar hsv_min, CvScalar hsv_max)
 {
   // Convert the image into an HSV image
-  IplImage* imgHSV = cvCreateImage(cvGetSize(img), 8, 3);
-  cvCvtColor(img, imgHSV, CV_BGR2HSV);
+//   IplImage* imgHSV = cvCreateImage(cvGetSize(img), 8, 3);
+//   cvCvtColor(img, imgHSV, CV_BGR2HSV);
 
-  IplImage* imgThreshed = cvCreateImage(cvGetSize(img), 8, 1);
-  cvSmooth( imgHSV, imgHSV, CV_BLUR, 27, 0, 0, 0 );
+  IplImage* imgThreshed = cvCreateImage(cvGetSize(imgHSV), 8, 1);
+//   cvSmooth( imgHSV, imgHSV, CV_BLUR, 5, 0, 0, 0 );
   
-  
+//   cout<<"In GetThresholdedImage"<<endl;
+//   cout<<"HSV MIN: "<<hsv_min.val[0]<<" "<<hsv_min.val[1]<<" "<<hsv_min.val[2]<<" "<<endl;
+//   cout<<"HSV MAX: "<<hsv_max.val[0]<<" "<<hsv_max.val[1]<<" "<<hsv_max.val[2]<<" "<<endl<<endl;
   cvInRangeS(imgHSV, hsv_min, hsv_max, imgThreshed);
 
-  cvReleaseImage(&imgHSV);
+//   cvReleaseImage(&imgHSV);
 
   return imgThreshed;
 }
 
 
-int main()
-{
-  CvCapture* capture = 0;
-  capture = cvCaptureFromCAM(0);	
 
-  int framecount = 0;
-  
-  if(!capture)
-  {
-    printf("Could not initialize capturing...\n");
-    return -1;
-  }
-  
-  
-  int choice;
-  cout<<"What do you want to do?"<<endl;
-  cout<<"1. Control the mouse."<<endl;
-  cout<<"2. Control arrow keys."<<endl;
-  
-  while(1)
-  {
-    cout<<"Enter your choice: ";
-    cin>>choice;
-    if( choice < 1 || choice > 2 )
-    {
-      cout<<"Invalid output. Try again."<<endl;
-    }
-    else break;
-  }
-  sleep(1);
-  if(choice == 1)
-    cout<<"Starting mouse control"<<endl;
-  else if(choice == 2)
-    cout<<"Starting keyboard control"<<endl;
-  
-  //The calibration code goes here.
-    cvNamedWindow("video");
-    IplImage* frame = 0;
-    while(true)
-    {
-      frame = cvQueryFrame(capture);
-      //drawing the yellow rectangle affects the color values in the ROI. So, drawing the rectangle just outside the ROI
-      cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(0, 255, 255));
-      cvShowImage("video", frame);
-      int input = cvWaitKey(1);
-//       cout<<input<<endl;
-      if(input == 32 || input == 1048608)
-	break;
-    }
-    
-    //Now we got the frame with the object to be tracked in the rectangle. We need to get the HSV value range for the object.
-    cvSetImageROI(frame, cvRect(ROISTARTX, ROISTARTY, ROIHEIGHT, ROIWIDTH));
+
+void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
+{
+      cvSetImageROI(frame, cvRect(ROISTARTX, ROISTARTY, ROIHEIGHT, ROIWIDTH));
     
     IplImage *sub_img = cvCreateImageHeader(cvSize( ROIHEIGHT, ROIWIDTH ), frame->depth, frame->nChannels);
     sub_img->origin = frame->origin;
@@ -164,38 +119,38 @@ int main()
 	    int Vmaxval = 0;
 	    for(int i = 0; i < 256; i++)
 	    {
-	      cout<<Hbuckets[i]<<" ";
+// 	      cout<<Hbuckets[i]<<" ";
 	      if(Hbuckets[i] > Hmaxval)
 	      {
 		Hmaxval = Hbuckets[i];
 		Hmaxbucket = i;
 	      }
 	    }
-	    cout<<endl<<endl;
+// 	    cout<<endl<<endl;
 // 	    cout<<Hmaxbucket<<" : "<< Hmaxval<<endl;
 	    
 	    for(int i = 0; i < 256; i++)
 	    {
-	      cout<<Sbuckets[i]<<" ";
+// 	      cout<<Sbuckets[i]<<" ";
 	      if(Sbuckets[i] > Smaxval)
 	      {
 		Smaxval = Sbuckets[i];
 		Smaxbucket = i;
 	      }
 	    }
-	    cout<<endl<<endl;
+// 	    cout<<endl<<endl;
 // 	    cout<<Smaxbucket<<" : "<< Smaxval<<endl;
 	    
 	    for(int i = 0; i < 256; i++)
 	    {
-	      cout<<Vbuckets[i]<<" ";
+// 	      cout<<Vbuckets[i]<<" ";
 	      if(Vbuckets[i] > Vmaxval)
 	      {
 		Vmaxval = Vbuckets[i];
 		Vmaxbucket = i;
 	      }
 	    }
-	    cout<<endl<<endl;
+// 	    cout<<endl<<endl;
 // 	    cout<<Vmaxbucket<<" : "<< Vmaxval<<endl;
 	    
 /* Below is a sample count value for all the HSV values (using a purple object). Apparently, the values are spread over a region. We need a code to find the largest continuous sequence of detected color values. Attempting it below this sample data.
@@ -244,7 +199,7 @@ int main()
 	    }
 	    int Hrangestart = Hmaxindex;
 	    int Hrangeend = Hmaxindex + Hmaxseqcount;
-	    cout<<"HStart : "<<Hrangestart<<" ; End : "<<Hrangeend<<endl;
+// 	    cout<<"HStart : "<<Hrangestart<<" ; End : "<<Hrangeend<<endl;
 	    
 	    int Htotalrange = Hrangeend - Hrangestart;
 	    int Hn = (Htotalrange / 10) + 1;
@@ -322,7 +277,7 @@ int main()
 	    
 	    int Srangestart = Smaxindex;
 	    int Srangeend = Smaxindex + Smaxseqcount;
-	    cout<<"SStart : "<<Srangestart<<" ; End : "<<Srangeend<<endl;
+// 	    cout<<"SStart : "<<Srangestart<<" ; End : "<<Srangeend<<endl;
 	    
 	    int Stotalrange = Srangeend - Srangestart;
 	    int Sn = (Stotalrange / 10) + 1;
@@ -391,7 +346,7 @@ int main()
 	    
 	    int Vrangestart = Vmaxindex;
 	    int Vrangeend = Vmaxindex + Vmaxseqcount;
-	    cout<<"VStart : "<<Vrangestart<<" ; End : "<<Vrangeend<<endl;
+// 	    cout<<"VStart : "<<Vrangestart<<" ; End : "<<Vrangeend<<endl;
 	    
 	    int Vtotalrange = Vrangeend - Vrangestart;
 	    int Vn = (Vtotalrange / 10) + 1;
@@ -463,7 +418,10 @@ int main()
       min[1] = 0.00;
     if(min[2] < 0)
       min[2] = 0.00;
-    CvScalar hsv_min = cvScalar( min[0], min[1], min[2], min[3] );
+    
+    
+    
+    HSVranges[0] = cvScalar( min[0], min[1], min[2], min[3] );
 //     CvScalar hsv_min = cvScalar( 0, 200, 200, 0 );
       
       
@@ -476,12 +434,76 @@ int main()
       max[1] = 255.00;
     if(max[2] > 255)
       max[2] = 255.00;
-    CvScalar hsv_max = cvScalar( max[0], max[1], max[2], max[3] );
+    HSVranges[1] = cvScalar( max[0], max[1], max[2], max[3] );
+    
+}
+    
+    
+
+
+
+
+
+int main()
+{
+  CvCapture* capture = 0;
+  capture = cvCaptureFromCAM(0);	
+
+  int framecount = 0;
+  
+  if(!capture)
+  {
+    printf("Could not initialize capturing...\n");
+    return -1;
+  }
+  
+  
+  int choice;
+  cout<<"What do you want to do?"<<endl;
+  cout<<"1. Control the mouse."<<endl;
+  cout<<"2. Control arrow keys."<<endl;
+  
+  while(1)
+  {
+    cout<<"Enter your choice: ";
+    cin>>choice;
+    if( choice < 1 || choice > 2 )
+    {
+      cout<<"Invalid output. Try again."<<endl;
+    }
+    else break;
+  }
+  sleep(1);
+  if(choice == 1)
+    cout<<"Starting mouse control"<<endl;
+  else if(choice == 2)
+    cout<<"Starting keyboard control"<<endl;
+  
+  //The calibration code goes here.
+    cvNamedWindow("video");
+    IplImage* frame = 0;
+    IplImage* RGBframe = 0;
+    while(true)
+    {
+      frame = cvQueryFrame(capture);
+      cvCvtColor(frame, frame, CV_BGR2HSV);
+      //drawing the yellow rectangle affects the color values in the ROI. So, drawing the rectangle just outside the ROI
+      cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(0, 255, 255));
+      cvShowImage("video", frame);
+      int input = cvWaitKey(1);
+//       cout<<input<<endl;
+      if(input == 32 || input == 1048608)
+	break;
+    }
+    
+    //Now we got the frame with the object to be tracked in the rectangle. We need to get the HSV value range for the object.
+    CvScalar HSVranges[2];
+    getHSVRanges(frame, HSVranges);
 //     CvScalar hsv_max = cvScalar( 180, 255, 255, 0);
  
     
-    cout<<"HSV MIN: "<<hsv_min.val[0]<<" "<<hsv_min.val[1]<<" "<<hsv_min.val[2]<<" "<<endl;
-    cout<<"HSV MAX: "<<hsv_max.val[0]<<" "<<hsv_max.val[1]<<" "<<hsv_max.val[2]<<" "<<endl;
+    cout<<"HSV MIN: "<<HSVranges[0].val[0]<<" "<<HSVranges[0].val[1]<<" "<<HSVranges[0].val[2]<<" "<<endl;
+    cout<<"HSV MAX: "<<HSVranges[1].val[0]<<" "<<HSVranges[1].val[1]<<" "<<HSVranges[1].val[2]<<" "<<endl<<endl;
 //     cout<<"HSV AVG: "<<avg_val[0]<<" "<<avg_val[1]<<" "<<avg_val[2]<<endl;
 //     cout<<"ROI AVG: "<<ROIavg[0]<<" "<<ROIavg[1]<<" "<<ROIavg[2]<<endl;
 //     cout<<"ROI SD:  "<<sd[0]<<" "<<sd[1]<<" "<<sd[2]<<endl;
@@ -501,13 +523,14 @@ int main()
   while(true)
   {
     frame = cvQueryFrame(capture);
+    cvCvtColor(frame, frame, CV_BGR2HSV);
     framecount++;
 
     if(!frame)
       break;
     
 
-    IplImage* imgThresh = GetThresholdedImage(frame, hsv_min, hsv_max);
+    IplImage* imgThresh = GetThresholdedImage(frame, HSVranges[0], HSVranges[1]);
 
     // Calculate the moments to estimate the position of the object
     CvMoments *moments = (CvMoments*)malloc(sizeof(CvMoments));
@@ -615,6 +638,7 @@ int main()
     posX = 640 - posX;
 
     cvRectangle(frame, cvPoint(posX + 10, posY - 10), cvPoint(posX - 10, posY + 10), cvScalar(0, 255, 255));
+    cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(40, 10, 255));
     cvShowImage("thresh", imgThresh);
     cvShowImage("video", frame);
 
@@ -624,6 +648,13 @@ int main()
     {
       if( c == 27 || c == 1048603)
 	break;
+      if( c == ' ' || c == 1048608)
+      {
+	CvScalar TestHSVranges[2];
+	getHSVRanges(frame, TestHSVranges);
+	cout<<"HSV MIN: "<<TestHSVranges[0].val[0]<<" "<<TestHSVranges[0].val[1]<<" "<<TestHSVranges[0].val[2]<<" "<<endl;
+	cout<<"HSV MAX: "<<TestHSVranges[1].val[0]<<" "<<TestHSVranges[1].val[1]<<" "<<TestHSVranges[1].val[2]<<" "<<endl<<endl;
+      }
     }
 
     cvReleaseImage(&imgThresh);
