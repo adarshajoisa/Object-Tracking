@@ -13,3 +13,8 @@ The algorithm for color detection is as follows:
 The position of the center is used to perform any useful function. In this program, I've provided 2 options, one to control the mouse pointer and second to simulate the arrow keys of the keyboard. The arrow keys are simulated by just moving the object in similar directions: left for left, up for up, left and up for left+up, and so on. The input is sent to the currently active window. You can comment out these lines to hide the webcam video and thresholded video windows: 
 cvShowImage("thresh", imgThresh);
 cvShowImage("video", frame);
+
+Note: compile on linux as:
+g++ -ggdb `pkg-config --cflags opencv` -o track TrackColour.cpp `pkg-config --libs opencv`
+
+Note: You need to have OpenCV development libraries installed on your system to compile this code. Refer to http://http://opencv.willowgarage.com/wiki/ for instructions on installing opencv.
