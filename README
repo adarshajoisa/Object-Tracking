@@ -1,0 +1,15 @@
+Object Tracking based on color using OpenCV
+Author: Adarsha Joisa
+
+This is a simple tool to track random colored objects using the computer's webcam. I've developed it on my laptop, so the default webcam has been used. If you are using a different(external) webcam,change the line: "capture = cvCaptureFromCAM(0);" by replacing the "0" with the appropirate index for your webcam.
+The algorithm for color detection is as follows:
+1. A capture is created to capture video from the webcam. A yellow square (20x20 pixels) is displayed at the center of the screen. This is considered to be the ROI. 
+2. The user shows the object to the camera such that the object fills the yellow square, and hits Space. 
+3. The current frame is captured. We extract the most prominent color in the ROI using the getHSVranges() function.
+4. Once we get the HSV ranges, the camera starts capturing live video. The frames are thresholded using the range we got earlier. (NOTE: I've written my own function for thresholding, but the openCV function cvInrangeS() works in the same way.)
+5. By calculating the moments for the thresholded image, we get the center of the object. (Note: If there's anything else in the camera's field of view with a color similar to the object, this center will be offset towards the colored region. Hence, it's best to use some object with a bright and rare color. (I've tried objects of red, orange, yellow, blue and purple, and they worked well.))
+
+
+The position of the center is used to perform any useful function. In this program, I've provided 2 options, one to control the mouse pointer and second to simulate the arrow keys of the keyboard. The arrow keys are simulated by just moving the object in similar directions: left for left, up for up, left and up for left+up, and so on. The input is sent to the currently active window. You can comment out these lines to hide the webcam video and thresholded video windows: 
+cvShowImage("thresh", imgThresh);
+cvShowImage("video", frame);
