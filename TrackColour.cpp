@@ -17,6 +17,33 @@
 
 using namespace std;
 
+
+void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgThreshed)
+{
+//   imgThreshed = cvCreateImage(cvGetSize(imgHSV), 8, 1);
+  for( int y=0; y<imgThreshed->height; y++ ) 
+  {
+    uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
+    uchar* threshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
+    for( int x=0; x<imgThreshed->width; x++ ) 
+    {
+      if( (ptr[3*x] > hsv_min.val[0] && ptr[3*x] < hsv_max.val[0]) && 
+	  (ptr[3*x + 1] > hsv_min.val[1] && ptr[3*x + 1] < hsv_max.val[1]) &&
+	  (ptr[3*x + 2] > hsv_min.val[2] && ptr[3*x + 2] < hsv_max.val[2]))
+      {
+	//threshold
+	threshptr[x] = 0xff;
+      }
+      else
+      {
+	threshptr[x] = 0x00;
+      }
+    }
+  }
+}
+
+
+
 IplImage* GetThresholdedImage(IplImage* imgHSV, CvScalar hsv_min, CvScalar hsv_max)
 {
   // Convert the image into an HSV image
@@ -29,13 +56,13 @@ IplImage* GetThresholdedImage(IplImage* imgHSV, CvScalar hsv_min, CvScalar hsv_m
 //   cout<<"In GetThresholdedImage"<<endl;
 //   cout<<"HSV MIN: "<<hsv_min.val[0]<<" "<<hsv_min.val[1]<<" "<<hsv_min.val[2]<<" "<<endl;
 //   cout<<"HSV MAX: "<<hsv_max.val[0]<<" "<<hsv_max.val[1]<<" "<<hsv_max.val[2]<<" "<<endl<<endl;
-  cvInRangeS(imgHSV, hsv_min, hsv_max, imgThreshed);
+//   cvInRangeS(imgHSV, hsv_min, hsv_max, imgThreshed);
+  InRangeS(imgHSV, hsv_min, hsv_max, imgThreshed);
 
 //   cvReleaseImage(&imgHSV);
 
   return imgThreshed;
 }
-
 
 
 
@@ -152,10 +179,7 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
 	    }
 // 	    cout<<endl<<endl;
 // 	    cout<<Vmaxbucket<<" : "<< Vmaxval<<endl;
-	    
-/* Below is a sample count value for all the HSV values (using a purple object). Apparently, the values are spread over a region. We need a code to find the largest continuous sequence of detected color values. Attempting it below this sample data.
-  * 39 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 3 3 2 4 3 7 10 6 7 7 4 6 13 8 11 12 9 11 11 10 10 9 9 6 12 10 7 14 10 10 6 11 11 4 2 3 3 8 3 5 3 6 3 5 4 4 1 2 0 1 0 3 1 1 3 1 3 0 1 3 3 2 0 1 0 1 0 2 1 1 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-  */
+	
 //Code to find the longest sequence of non-zero pixel values
 
 	    int Hseqcount = 0, Hmaxseqcount = 0;
@@ -163,7 +187,6 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
 	    int Hmaxindex = 0;
 	    int Hflag = 0;
 	    
-	    // 0 0 0 0 1 1 0 0 1 0 1 0 1 1 4 2 8 4 5 2 0 2 3 5 4 0 0 1 0 1 1 0 1 1 0 0 0 0 0 0 0 0 0 
 	    for(int i = 0; i < 256; i++)
 	    {
 	      if(Hbuckets[i] == 0)
@@ -654,7 +677,13 @@ int main()
 	getHSVRanges(frame, TestHSVranges);
 	cout<<"HSV MIN: "<<TestHSVranges[0].val[0]<<" "<<TestHSVranges[0].val[1]<<" "<<TestHSVranges[0].val[2]<<" "<<endl;
 	cout<<"HSV MAX: "<<TestHSVranges[1].val[0]<<" "<<TestHSVranges[1].val[1]<<" "<<TestHSVranges[1].val[2]<<" "<<endl<<endl;
+
+// 	system("xdotool mousedown 1");
       }
+//       else
+//       {
+// 	system("xdotool mouseup 1");
+//       }
     }
 
     cvReleaseImage(&imgThresh);
