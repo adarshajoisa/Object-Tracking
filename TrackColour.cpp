@@ -37,12 +37,9 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
 	  (ptr[3*x + 2] > hsv_min.val[2] && ptr[3*x + 2] < hsv_max.val[2]))
       {
 	//threshold
-// 	printf("%d %d %d\n",ptr[3*x],ptr[3*x + 1], ptr[3*x + 2]);
 	threshptr[x] = 0xff;
       }
-      else if( ( (ptr[3*(x-1)] > hsv_min.val[0] && ptr[3*(x-1)] < hsv_max.val[0]) && 
-		(ptr[3*(x-1) + 1] > hsv_min.val[1] && ptr[3*(x-1) + 1] < hsv_max.val[1]) &&
-		(ptr[3*(x-1) + 2] > hsv_min.val[2] && ptr[3*(x-1) + 2] < hsv_max.val[2]))
+      else if( ( threshptr[x-1] == 0xff )
 		&&
 		( (ptr[3*x] > hsv_min.val[0] - 5 && ptr[3*x] < hsv_max.val[0] + 5) && 
 		  (ptr[3*x + 1] > hsv_min.val[1] - 10 && ptr[3*x + 1] < hsv_max.val[1] + 10) &&
@@ -526,7 +523,7 @@ int main()
       cvShowImage("video", frame);
       int input = cvWaitKey(1);
 //       cout<<input<<endl;
-      if(input == 32 || input == 1048608 || input == 1179680)
+      if((input % 256 )== 32)// || input == 1048608 || input == 1179680)
 	break;
     }
     
@@ -680,9 +677,9 @@ int main()
 
     if(c!=-1)
     {
-      if( c == 27 || c == 1048603 || c == 1179675)
+      if( (c % 256) == 27 )// || c == 1048603 || c == 1179675)
 	break;
-      if( c == ' ' || c == 1048608 || c == 1179680)
+      if( (c % 256) == ' ' )// || c == 1048608 || c == 1179680)
       {
 	CvScalar TestHSVranges[2];
 	getHSVRanges(frame, TestHSVranges);
