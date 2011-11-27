@@ -40,7 +40,7 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
 // 	printf("%d %d %d\n",ptr[3*x],ptr[3*x + 1], ptr[3*x + 2]);
 	threshptr[x] = 0xff;
       }
-      /*else if( ( (ptr[3*(x-1)] > hsv_min.val[0] && ptr[3*(x-1)] < hsv_max.val[0]) && 
+      else if( ( (ptr[3*(x-1)] > hsv_min.val[0] && ptr[3*(x-1)] < hsv_max.val[0]) && 
 		(ptr[3*(x-1) + 1] > hsv_min.val[1] && ptr[3*(x-1) + 1] < hsv_max.val[1]) &&
 		(ptr[3*(x-1) + 2] > hsv_min.val[2] && ptr[3*(x-1) + 2] < hsv_max.val[2]))
 		&&
@@ -50,7 +50,7 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
       {
 	//threshold
 	threshptr[x] = 0xff;
-      }*/
+      }
       else
       {
 	threshptr[x] = 0x00;
@@ -63,20 +63,10 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
 
 IplImage* GetThresholdedImage(IplImage* imgHSV, CvScalar hsv_min, CvScalar hsv_max)
 {
-  // Convert the image into an HSV image
-//   IplImage* imgHSV = cvCreateImage(cvGetSize(img), 8, 3);
-//   cvCvtColor(img, imgHSV, CV_BGR2HSV);
-
   IplImage* imgThreshed = cvCreateImage(cvGetSize(imgHSV), 8, 1);
   cvSmooth( imgHSV, imgHSV, CV_BLUR, 5, 0, 0, 0 );
-  
-//   cout<<"In GetThresholdedImage"<<endl;
-//   cout<<"HSV MIN: "<<hsv_min.val[0]<<" "<<hsv_min.val[1]<<" "<<hsv_min.val[2]<<" "<<endl;
-//   cout<<"HSV MAX: "<<hsv_max.val[0]<<" "<<hsv_max.val[1]<<" "<<hsv_max.val[2]<<" "<<endl<<endl;
 //   cvInRangeS(imgHSV, hsv_min, hsv_max, imgThreshed);
   InRangeS(imgHSV, hsv_min, hsv_max, imgThreshed);
-
-//   cvReleaseImage(&imgHSV);
 
   return imgThreshed;
 }
@@ -496,7 +486,7 @@ int main()
   
   if(!capture)
   {
-    printf("Could not initialize capturing...\n");
+    printf("Could not start capturing from camera...\n");
     return -1;
   }
   
@@ -536,7 +526,7 @@ int main()
       cvShowImage("video", frame);
       int input = cvWaitKey(1);
 //       cout<<input<<endl;
-      if(input == 32 || input == 1048608)
+      if(input == 32 || input == 1048608 || input == 1179680)
 	break;
     }
     
@@ -690,9 +680,9 @@ int main()
 
     if(c!=-1)
     {
-      if( c == 27 || c == 1048603)
+      if( c == 27 || c == 1048603 || c == 1179675)
 	break;
-      if( c == ' ' || c == 1048608)
+      if( c == ' ' || c == 1048608 || c == 1179680)
       {
 	CvScalar TestHSVranges[2];
 	getHSVRanges(frame, TestHSVranges);
