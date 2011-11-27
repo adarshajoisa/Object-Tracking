@@ -21,6 +21,11 @@ using namespace std;
 void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgThreshed)
 {
 //   imgThreshed = cvCreateImage(cvGetSize(imgHSV), 8, 1);
+  if(imgHSV == NULL || imgThreshed == NULL)
+  {
+    cout<<"Null pointer encountered. Aborting..."<<endl;
+    exit(1);
+  }
   for( int y=0; y<imgThreshed->height; y++ ) 
   {
     uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
@@ -32,8 +37,20 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
 	  (ptr[3*x + 2] > hsv_min.val[2] && ptr[3*x + 2] < hsv_max.val[2]))
       {
 	//threshold
+// 	printf("%d %d %d\n",ptr[3*x],ptr[3*x + 1], ptr[3*x + 2]);
 	threshptr[x] = 0xff;
       }
+      /*else if( ( (ptr[3*(x-1)] > hsv_min.val[0] && ptr[3*(x-1)] < hsv_max.val[0]) && 
+		(ptr[3*(x-1) + 1] > hsv_min.val[1] && ptr[3*(x-1) + 1] < hsv_max.val[1]) &&
+		(ptr[3*(x-1) + 2] > hsv_min.val[2] && ptr[3*(x-1) + 2] < hsv_max.val[2]))
+		&&
+		( (ptr[3*x] > hsv_min.val[0] - 5 && ptr[3*x] < hsv_max.val[0] + 5) && 
+		  (ptr[3*x + 1] > hsv_min.val[1] - 10 && ptr[3*x + 1] < hsv_max.val[1] + 10) &&
+		  (ptr[3*x + 2] > hsv_min.val[2] - 10 && ptr[3*x + 2] < hsv_max.val[2] + 10)))
+      {
+	//threshold
+	threshptr[x] = 0xff;
+      }*/
       else
       {
 	threshptr[x] = 0x00;
@@ -51,7 +68,7 @@ IplImage* GetThresholdedImage(IplImage* imgHSV, CvScalar hsv_min, CvScalar hsv_m
 //   cvCvtColor(img, imgHSV, CV_BGR2HSV);
 
   IplImage* imgThreshed = cvCreateImage(cvGetSize(imgHSV), 8, 1);
-//   cvSmooth( imgHSV, imgHSV, CV_BLUR, 5, 0, 0, 0 );
+  cvSmooth( imgHSV, imgHSV, CV_BLUR, 5, 0, 0, 0 );
   
 //   cout<<"In GetThresholdedImage"<<endl;
 //   cout<<"HSV MIN: "<<hsv_min.val[0]<<" "<<hsv_min.val[1]<<" "<<hsv_min.val[2]<<" "<<endl;
@@ -127,10 +144,13 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
 	      for( int x=0; x<sub_img->width; x++ ) 
 	      {
 		Hbucketindex = (int)ptr[3*x];
+// 		printf("%d ",ptr[3*x]);
 		Hbuckets[Hbucketindex] ++;
 		Sbucketindex = (int)ptr[3*x + 1];
+// 		printf("%d ",ptr[3*x + 1]);
 		Sbuckets[Sbucketindex] ++;
 		Vbucketindex = (int)ptr[3*x + 2];
+// 		printf("%d\n",ptr[3*x + 2]);
 		Vbuckets[Vbucketindex] ++;
 // 		total[0] += (ROIavg[0] - ptr[3*x]) * (ROIavg[0] - ptr[3*x]);
 // 		total[1] += (ROIavg[1] - ptr[3*x + 1]) * (ROIavg[1] - ptr[3*x + 1]);
@@ -651,7 +671,7 @@ int main()
 	system("xdotool keydown Down");
       }
       
-      cout<<"up = "<<up<<" down = "<<down<<" left = "<<left<<" right = "<<right<<" frame = "<<framecount<<endl;
+//       cout<<"up = "<<up<<" down = "<<down<<" left = "<<left<<" right = "<<right<<" frame = "<<framecount<<endl;
     }
     
     /*
