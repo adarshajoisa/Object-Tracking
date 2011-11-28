@@ -72,6 +72,7 @@ IplImage* GetThresholdedImage(IplImage* imgHSV, CvScalar hsv_min, CvScalar hsv_m
 
 void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
 {
+  
       cvSetImageROI(frame, cvRect(ROISTARTX, ROISTARTY, ROIHEIGHT, ROIWIDTH));
     
     IplImage *sub_img = cvCreateImageHeader(cvSize( ROIHEIGHT, ROIWIDTH ), frame->depth, frame->nChannels);
@@ -504,7 +505,6 @@ int main()
     }
     else break;
   }
-  sleep(1);
   if(choice == 1)
     cout<<"Starting mouse control"<<endl;
   else if(choice == 2)
@@ -517,13 +517,14 @@ int main()
     while(true)
     {
       frame = cvQueryFrame(capture);
+//       IplImage* frame = cvCreateImage(cvGetSize(RGBframe), 8, 3);
       cvCvtColor(frame, frame, CV_BGR2HSV);
       //drawing the yellow rectangle affects the color values in the ROI. So, drawing the rectangle just outside the ROI
       cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(0, 255, 255));
       cvShowImage("video", frame);
       int input = cvWaitKey(1);
 //       cout<<input<<endl;
-      if((input % 256 )== 32)// || input == 1048608 || input == 1179680)
+      if((input % 256 )== 32)
 	break;
     }
     
@@ -550,10 +551,11 @@ int main()
   
   int left = 0, right = 0, up = 0, down = 0;
   char ch;
-  
+  sleep(1);
   while(true)
   {
     frame = cvQueryFrame(capture);
+//     IplImage* frame = cvCreateImage(cvGetSize(RGBframe), 8, 3);
     cvCvtColor(frame, frame, CV_BGR2HSV);
     framecount++;
 
