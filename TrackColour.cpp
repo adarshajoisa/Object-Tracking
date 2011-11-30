@@ -38,20 +38,20 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
   
   //Get the previous direction of object movement.
       int sidedirection = 0, updirection = 0;
-      if( pos[(curtop + 8 ) % 10].x > pos[curtop].x + 5)
-	sidedirection = 1;
-      
-      else if( pos[(curtop + 8 ) % 10].x < pos[curtop].x - 5)
+      if( pos[(curtop + 4 ) % 10].x > pos[curtop].x + 5)
 	sidedirection = -1;
+      
+      else if( pos[(curtop + 4 ) % 10].x < pos[curtop].x - 5)
+	sidedirection = 1;
       
       else sidedirection = 0;
 
       
       
-      if( pos[(curtop + 8 ) % 10].y > pos[curtop].y + 5)
+      if( pos[(curtop + 4 ) % 10].y > pos[curtop].y + 5)
 	updirection = 1;
       
-      else if( pos[(curtop + 8 ) % 10].y < pos[curtop].y - 5)
+      else if( pos[(curtop + 4 ) % 10].y < pos[curtop].y - 5)
 	updirection = -1;
       
       else updirection = 0;
@@ -60,32 +60,32 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
   //Set ROI for thresholding based on the previous position and direction of movement
       int ROIx;
       if( sidedirection == 0)
-	ROIx = pos[curtop].x;
+	ROIx = pos[curtop].x - 100;
       else if(sidedirection == -1)
-	ROIx = pos[curtop].x - 75;
+	ROIx = pos[curtop].x - 130;
       else
-	ROIx = pos[curtop].x;
+	ROIx = pos[curtop].x - 75;
       
       if(ROIx < 0)
 	ROIx = 0;
-      if(ROIx > 490)
-	ROIx = 490;
+      if(ROIx > 440)
+	ROIx = 440;
       
       
       int ROIy;
       if( updirection == 0)
-	ROIy = pos[curtop].y;
+	ROIy = pos[curtop].y - 100;
       else if(updirection == -1)
-	ROIy = pos[curtop].y;
-      else
 	ROIy = pos[curtop].y - 75;
+      else
+	ROIy = pos[curtop].y - 130;
       
       if(ROIy < 0)
 	ROIy = 0;
-      if(ROIy > 330)
-	ROIy = 330;
+      if(ROIy > 280)
+	ROIy = 280;
       
-      cvSetImageROI( imgHSV, cvRect(ROIx, ROIy, 150, 150));
+      cvSetImageROI( imgHSV, cvRect(ROIx, ROIy, 200, 200));
 
   //Initialize the threshold image ( imgThreshed ) to black
   for(int y = 0; y < imgThreshed->height; y++)
@@ -98,11 +98,11 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
   
   //Threshold the ROI and write to imgThreshed
   int whitecount = 0;
-  for( int y=0; y<imgHSV->height; y++ ) 
+  for( int y=ROIy; y<(ROIy + 150); y++ ) 
   {
     uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
     uchar* threshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
-    for( int x=0; x<imgHSV->width; x++ ) 
+    for( int x=ROIx; x<(ROIx + 150); x++ ) 
     {
       int prevline = x - imgHSV->width;
       if( prevline < 0 )
@@ -127,9 +127,13 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
 
   //If object was detected in this ROI, return. Else threshold the entire image.
   if(whitecount > 100)
+  {
+    cout<<"Improved"<<endl;
     return;
+  }
   else
   {
+    cout<<"Old School"<<endl;
     for( int y=0; y<imgThreshed->height; y++ ) 
     {
       uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
@@ -621,8 +625,8 @@ int main()
     pos[curtop].y = posY;
     curtop = (curtop + 1) % 10;
     
-    
-    
+//     cout<<posX<<" "<<posY<<endl;
+   
     if(posX <= 0)
       posX = lastX;
     if(posY <= 0)
@@ -709,7 +713,7 @@ int main()
     posX = 640 - posX;
 
     cvRectangle(frame, cvPoint(posX + 10, posY - 10), cvPoint(posX - 10, posY + 10), cvScalar(0, 255, 255));
-    cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(40, 10, 255));
+//     cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(40, 10, 255));
     cvShowImage("thresh", imgThresh);
     cvShowImage("video", frame);
 
