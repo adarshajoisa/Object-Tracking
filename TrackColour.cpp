@@ -14,6 +14,15 @@
 #define ROIHEIGHT 20
 #define ROIWIDTH 20
 
+struct centroidposition
+{
+  int x;
+  int y;
+};
+
+  centroidposition pos[10];
+  int curtop = 0;
+  const int qmaxlen = 10;
 
 using namespace std;
 
@@ -26,31 +35,126 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
     cout<<"Null pointer encountered. Aborting..."<<endl;
     exit(1);
   }
-  for( int y=0; y<imgThreshed->height; y++ ) 
+  
+  int sidedirection = 0, updirection = 0;
+  if( pos[(curtop + 8 ) % 10].x > pos[curtop].x + 5)
+    sidedirection = 1;
+  
+  else if( pos[(curtop + 8 ) % 10].x < pos[curtop].x - 5)
+    sidedirection = -1;
+  
+  else sidedirection = 0;
+
+  
+  
+  if( pos[(curtop + 8 ) % 10].y > pos[curtop].y + 5)
+    updirection = 1;
+  
+  else if( pos[(curtop + 8 ) % 10].y < pos[curtop].y - 5)
+    updirection = -1;
+  
+  else updirection = 0;
+  
+  
+  
+  int ROIx;
+  if( sidedirection == 0)
+    ROIx = pos[curtop].x;
+  else if(sidedirection == -1)
+    ROIx = pos[curtop].x - 75;
+  else
+    ROIx = pos[curtop].x;
+  
+  if(ROIx < 0)
+    ROIx = 0;
+  if(ROIx > 490)
+    ROIx = 490;
+  
+  
+  int ROIy;
+  if( updirection == 0)
+    ROIy = pos[curtop].y;
+  else if(updirection == -1)
+    ROIy = pos[curtop].y;
+  else
+    ROIy = pos[curtop].y - 75;
+  
+  if(ROIy < 0)
+    ROIy = 0;
+  if(ROIy > 330)
+    ROIy = 330;
+  
+  cvSetImageROI( imgHSV, cvRect(ROIx, ROIy, 150, 150));
+//   cout<<"Set image ROI"<<endl;
+  
+  for(int y = 0; y < imgThreshed->height; y++)
+  {
+    uchar* tempthreshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
+    for(int x = 0; x < imgThreshed->width; x++)
+      tempthreshptr[x] = 0x00;
+  }
+  
+    int whitecount = 0;
+//     cout<<imgHSV->height<<endl;
+    for( int y=0; y<imgHSV->height; y++ ) 
   {
     uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
     uchar* threshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
-    for( int x=0; x<imgThreshed->width; x++ ) 
+    for( int x=0; x<imgHSV->width; x++ ) 
     {
-      if( (ptr[3*x] > hsv_min.val[0] && ptr[3*x] < hsv_max.val[0]) && 
-	  (ptr[3*x + 1] > hsv_min.val[1] && ptr[3*x + 1] < hsv_max.val[1]) &&
-	  (ptr[3*x + 2] > hsv_min.val[2] && ptr[3*x + 2] < hsv_max.val[2]))
+      int prevline = x - imgHSV->width;
+      if( prevline < 0 )
+	prevline = 0;
+      if( (ptr[3*x] > (hsv_min.val[0] - 5) && ptr[3*x] < (hsv_max.val[0] + 5)) && 
+	  (ptr[3*x + 1] > (hsv_min.val[1] - 10) && ptr[3*x + 1] < (hsv_max.val[1] + 10)) &&
+	  (ptr[3*x + 2] > (hsv_min.val[2] - 10) && ptr[3*x + 2] < (hsv_max.val[2] + 10)))
       {
 	//threshold
 	threshptr[x] = 0xff;
-      }
-      else if( ( threshptr[x-1] == 0xff )
-		&&
-		( (ptr[3*x] > hsv_min.val[0] - 5 && ptr[3*x] < hsv_max.val[0] + 5) && 
-		  (ptr[3*x + 1] > hsv_min.val[1] - 10 && ptr[3*x + 1] < hsv_max.val[1] + 10) &&
-		  (ptr[3*x + 2] > hsv_min.val[2] - 10 && ptr[3*x + 2] < hsv_max.val[2] + 10)))
-      {
-	//threshold
-	threshptr[x] = 0xff;
+	whitecount++;
       }
       else
       {
 	threshptr[x] = 0x00;
+      }
+    }
+  }
+  
+  cvResetImageROI(imgHSV);
+//   cout<<"White: "<<whitecount<<endl;
+  if(whitecount > 5000)
+    return;
+  else
+  {
+    for( int y=0; y<imgThreshed->height; y++ ) 
+    {
+      uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
+      uchar* threshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
+      for( int x=0; x<imgThreshed->width; x++ ) 
+      {
+	int prevline = x - imgThreshed->width;
+	if( prevline < 0 )
+	  prevline = 0;
+	if( (ptr[3*x] > hsv_min.val[0] && ptr[3*x] < hsv_max.val[0]) && 
+	    (ptr[3*x + 1] > hsv_min.val[1] && ptr[3*x + 1] < hsv_max.val[1]) &&
+	    (ptr[3*x + 2] > hsv_min.val[2] && ptr[3*x + 2] < hsv_max.val[2]))
+	{
+	  //threshold
+	  threshptr[x] = 0xff;
+	}
+	else if( ( threshptr[x-1] == 0xff  || threshptr[prevline] == 0xff)
+		  &&
+		  ( (ptr[3*x] > hsv_min.val[0] - 5 && ptr[3*x] < hsv_max.val[0] + 5) && 
+		    (ptr[3*x + 1] > hsv_min.val[1] - 10 && ptr[3*x + 1] < hsv_max.val[1] + 10) &&
+		    (ptr[3*x + 2] > hsv_min.val[2] - 10 && ptr[3*x + 2] < hsv_max.val[2] + 10)))
+	{
+	  //threshold
+	  threshptr[x] = 0xff;
+	}
+	else
+	{
+	  threshptr[x] = 0x00;
+	}
       }
     }
   }
@@ -64,7 +168,6 @@ IplImage* GetThresholdedImage(IplImage* imgHSV, CvScalar hsv_min, CvScalar hsv_m
   cvSmooth( imgHSV, imgHSV, CV_BLUR, 5, 0, 0, 0 );
 //   cvInRangeS(imgHSV, hsv_min, hsv_max, imgThreshed);
   InRangeS(imgHSV, hsv_min, hsv_max, imgThreshed);
-
   return imgThreshed;
 }
 
@@ -87,38 +190,13 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
     //Get the average and standard deviation of HSV values for the recognized object
     cvAvgSdv(frame, &hsv_avg, &hsv_sdv, 0);
     
-    //handwritten code for getting average of HSV values
-// 	    double avg[3];
-// 	    double total[3];
-// 	    double sd[3];
-// 	    int pixelcount = 0;
-// 	    avg[0] = avg[1] = avg[2] = 0;
-// 	    total[0] = total[1] = total[2] = 0;
-// 	    for( int y=0; y<sub_img->height; y++ ) 
-// 	    {
-// 	      uchar* ptr = (uchar*) ( sub_img->imageData + y * sub_img->widthStep );
-// 	      for( int x=0; x<sub_img->width; x++ ) 
-// 	      {
-// 		avg[0] += ptr[3*x];
-// 		avg[1] += ptr[3*x+1];
-// 		avg[2] += ptr[3*x+2];
-// 		lastY
-// 		pixelcount++;
-// 	      }
-// 	    }
-
 	    
-// 	    double ROIavg[4];
 	    int Hbuckets[256];
 	    int Sbuckets[256];
 	    int Vbuckets[256];
 	    int Hbucketindex = 0;
 	    int Sbucketindex = 0;
 	    int Vbucketindex = 0;
-// 	    ROIavg[0] = (double)(avg[0]/pixelcount);
-// 	    ROIavg[1] = (double)(avg[1]/pixelcount);
-// 	    ROIavg[2] = (double)(avg[2]/pixelcount);
-// 	    ROIavg[3] = 0;
 
 	    for(int i = 0; i < 256; i++)
 	    {
@@ -132,17 +210,11 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
 	      for( int x=0; x<sub_img->width; x++ ) 
 	      {
 		Hbucketindex = (int)ptr[3*x];
-// 		printf("%d ",ptr[3*x]);
 		Hbuckets[Hbucketindex] ++;
 		Sbucketindex = (int)ptr[3*x + 1];
-// 		printf("%d ",ptr[3*x + 1]);
 		Sbuckets[Sbucketindex] ++;
 		Vbucketindex = (int)ptr[3*x + 2];
-// 		printf("%d\n",ptr[3*x + 2]);
 		Vbuckets[Vbucketindex] ++;
-// 		total[0] += (ROIavg[0] - ptr[3*x]) * (ROIavg[0] - ptr[3*x]);
-// 		total[1] += (ROIavg[1] - ptr[3*x + 1]) * (ROIavg[1] - ptr[3*x + 1]);
-// 		total[2] += (ROIavg[2] - ptr[3*x + 2]) * (ROIavg[2] - ptr[3*x + 2]);
 	      }
 	    }
 	    
@@ -161,8 +233,6 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
 		Hmaxbucket = i;
 	      }
 	    }
-// 	    cout<<endl<<endl;
-// 	    cout<<Hmaxbucket<<" : "<< Hmaxval<<endl;
 	    
 	    for(int i = 0; i < 256; i++)
 	    {
@@ -173,8 +243,6 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
 		Smaxbucket = i;
 	      }
 	    }
-// 	    cout<<endl<<endl;
-// 	    cout<<Smaxbucket<<" : "<< Smaxval<<endl;
 	    
 	    for(int i = 0; i < 256; i++)
 	    {
@@ -185,8 +253,6 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
 		Vmaxbucket = i;
 	      }
 	    }
-// 	    cout<<endl<<endl;
-// 	    cout<<Vmaxbucket<<" : "<< Vmaxval<<endl;
 	
 //Code to find the longest sequence of non-zero pixel values
 
@@ -408,28 +474,6 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
 	      }
 	    }
 	    
-	    
-	    
-	    
-// 	    Hrangestart = (Hmaxrangestart * 10) + Hrangestart;
-// 	    Hrangeend = Hrangestart + 10;
-//code to get the color range ends here.
-// 	    cout<<pixelcount<<endl;
-// 	    sd[0] = total[0]/pixelcount;
-// 	    sd[1] = total[1]/pixelcount;
-// 	    sd[2] = total[2]/pixelcount;
-// 	    
-// // 	    cout<<"ROI SD:  "<<sd[0]<<" "<<sd[1]<<" "<<sd[2]<<endl;
-// 	    
-// 	    sd[0] = fabs(sd[0]);
-// 	    sd[1] = fabs(sd[1]);
-// 	    sd[2] = fabs(sd[2]);
-// 	    
-// 	    sd[0] = sqrt(sd[0]);//fabs(sqrt(sd[0]));
-// 	    sd[1] = sqrt(sd[1]);//fabs(sqrt(sd[1]));
-// 	    sd[2] = sqrt(sd[2]);//fabs(sqrt(sd[2]));
-// 	    
-//   
     cvResetImageROI(frame);
     double avg_val[4], sdv_val[4];
     for(int i = 0; i < 4; i++)
@@ -438,7 +482,7 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
       sdv_val[i] = hsv_sdv.val[i];
     }
         
-     // Values 20,100,100 to 30,255,255 working perfect for yellow at around 6pm
+     // Values 20,100,100 to 30,255,255 working perfect for ping pong ball at around 6pm
      //Set min and max values for the object to be tracked
     double min[4];
     min[0] = Hrangestart; //*/avg_val[0] - hsv_sdv.val[0];
@@ -468,10 +512,6 @@ void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
     HSVranges[1] = cvScalar( max[0], max[1], max[2], max[3] );
     
 }
-    
-    
-
-
 
 
 
@@ -479,6 +519,8 @@ int main()
 {
   CvCapture* capture = 0;
   capture = cvCaptureFromCAM(0);	
+  
+  
 
   int framecount = 0;
   
@@ -531,31 +573,17 @@ int main()
     //Now we got the frame with the object to be tracked in the rectangle. We need to get the HSV value range for the object.
     CvScalar HSVranges[2];
     getHSVRanges(frame, HSVranges);
-//     CvScalar hsv_max = cvScalar( 180, 255, 255, 0);
  
     
     cout<<"HSV MIN: "<<HSVranges[0].val[0]<<" "<<HSVranges[0].val[1]<<" "<<HSVranges[0].val[2]<<" "<<endl;
     cout<<"HSV MAX: "<<HSVranges[1].val[0]<<" "<<HSVranges[1].val[1]<<" "<<HSVranges[1].val[2]<<" "<<endl<<endl;
-//     cout<<"HSV AVG: "<<avg_val[0]<<" "<<avg_val[1]<<" "<<avg_val[2]<<endl;
-//     cout<<"ROI AVG: "<<ROIavg[0]<<" "<<ROIavg[1]<<" "<<ROIavg[2]<<endl;
-//     cout<<"ROI SD:  "<<sd[0]<<" "<<sd[1]<<" "<<sd[2]<<endl;
-//     cout<<"HSV SDV: "<<hsv_sdv.val[0]<<" "<<hsv_sdv.val[1]<<" "<<hsv_sdv.val[2]<<endl;
-    
-//SHOW THE ROI IN A NEW WINDOW:
-//     cvNamedWindow("ROI");
-//     cvShowImage("ROI", sub_img);
-    
-    
-//   cvNamedWindow("video");
-//   cvNamedWindow("thresh");
-  
+ 
   int left = 0, right = 0, up = 0, down = 0;
   char ch;
   sleep(1);
   while(true)
   {
     frame = cvQueryFrame(capture);
-//     IplImage* frame = cvCreateImage(cvGetSize(RGBframe), 8, 3);
     cvCvtColor(frame, frame, CV_BGR2HSV);
     framecount++;
 
@@ -564,6 +592,7 @@ int main()
     
 
     IplImage* imgThresh = GetThresholdedImage(frame, HSVranges[0], HSVranges[1]);
+    
 
     // Calculate the moments to estimate the position of the object
     CvMoments *moments = (CvMoments*)malloc(sizeof(CvMoments));
@@ -584,29 +613,34 @@ int main()
     posX = moment10/area;
     posY = moment01/area;
     
+    pos[curtop].x = posX;
+    pos[curtop].y = posY;
+    curtop = (curtop + 1) % 10;
+    
+    
+    
     if(posX <= 0)
       posX = lastX;
     if(posY <= 0)
       posY = lastY;
-    
-//     if( lastX > (posX + 50) || lastX < (posX - 50))
-//       posX = lastX;
-//     if(lastY > (posY + 50) || lastY < (posY - 50))
-//       posY = lastY;
+ 
     //invert the sideways movement to get a mirror image of movement
     posX = 640 - posX;		//the camera doesn't give a mirror image. We need a mirror image to get the left-right directions correct.
 
     char command[50], clickcmd[50];
+    
+    //Code to emulate mouse click by hitting Space
 //     ch = cvWaitKey(1);
 //     if(ch == ' ')
 //       strcpy(clickcmd,"xdotool mousedown 1");
 //     else
 //       strcpy(clickcmd,"xdotool mouseup 1");
+    
+//     cvDestroyAllWindows();
     sprintf(command, "xdotool mousemove %d %d", (int)posX*2, (int) (posY*1.66)); //converting 640x480 into 1280x800
 //     cout<<posX<<"\t"<<posY<<endl;
     if(choice == 1)
     {
-//       system(clickcmd);
       system(command);
     }
     else
