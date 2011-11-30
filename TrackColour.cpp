@@ -36,7 +36,7 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
     exit(1);
   }
   
-  //Get the previous direction of obect movement.
+  //Get the previous direction of object movement.
       int sidedirection = 0, updirection = 0;
       if( pos[(curtop + 8 ) % 10].x > pos[curtop].x + 5)
 	sidedirection = 1;
