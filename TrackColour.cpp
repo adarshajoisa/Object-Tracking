@@ -123,9 +123,10 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
   }
   
   cvResetImageROI(imgHSV);
+//   cout<<whitecount<<endl;
 
   //If object was detected in this ROI, return. Else threshold the entire image.
-  if(whitecount > 5000)
+  if(whitecount > 100)
     return;
   else
   {
