@@ -36,57 +36,58 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
     exit(1);
   }
   
-  int sidedirection = 0, updirection = 0;
-  if( pos[(curtop + 8 ) % 10].x > pos[curtop].x + 5)
-    sidedirection = 1;
-  
-  else if( pos[(curtop + 8 ) % 10].x < pos[curtop].x - 5)
-    sidedirection = -1;
-  
-  else sidedirection = 0;
+  //Get the previous direction of obect movement.
+      int sidedirection = 0, updirection = 0;
+      if( pos[(curtop + 8 ) % 10].x > pos[curtop].x + 5)
+	sidedirection = 1;
+      
+      else if( pos[(curtop + 8 ) % 10].x < pos[curtop].x - 5)
+	sidedirection = -1;
+      
+      else sidedirection = 0;
 
+      
+      
+      if( pos[(curtop + 8 ) % 10].y > pos[curtop].y + 5)
+	updirection = 1;
+      
+      else if( pos[(curtop + 8 ) % 10].y < pos[curtop].y - 5)
+	updirection = -1;
+      
+      else updirection = 0;
   
   
-  if( pos[(curtop + 8 ) % 10].y > pos[curtop].y + 5)
-    updirection = 1;
-  
-  else if( pos[(curtop + 8 ) % 10].y < pos[curtop].y - 5)
-    updirection = -1;
-  
-  else updirection = 0;
-  
-  
-  
-  int ROIx;
-  if( sidedirection == 0)
-    ROIx = pos[curtop].x;
-  else if(sidedirection == -1)
-    ROIx = pos[curtop].x - 75;
-  else
-    ROIx = pos[curtop].x;
-  
-  if(ROIx < 0)
-    ROIx = 0;
-  if(ROIx > 490)
-    ROIx = 490;
-  
-  
-  int ROIy;
-  if( updirection == 0)
-    ROIy = pos[curtop].y;
-  else if(updirection == -1)
-    ROIy = pos[curtop].y;
-  else
-    ROIy = pos[curtop].y - 75;
-  
-  if(ROIy < 0)
-    ROIy = 0;
-  if(ROIy > 330)
-    ROIy = 330;
-  
-  cvSetImageROI( imgHSV, cvRect(ROIx, ROIy, 150, 150));
-//   cout<<"Set image ROI"<<endl;
-  
+  //Set ROI for thresholding based on the previous position and direction of movement
+      int ROIx;
+      if( sidedirection == 0)
+	ROIx = pos[curtop].x;
+      else if(sidedirection == -1)
+	ROIx = pos[curtop].x - 75;
+      else
+	ROIx = pos[curtop].x;
+      
+      if(ROIx < 0)
+	ROIx = 0;
+      if(ROIx > 490)
+	ROIx = 490;
+      
+      
+      int ROIy;
+      if( updirection == 0)
+	ROIy = pos[curtop].y;
+      else if(updirection == -1)
+	ROIy = pos[curtop].y;
+      else
+	ROIy = pos[curtop].y - 75;
+      
+      if(ROIy < 0)
+	ROIy = 0;
+      if(ROIy > 330)
+	ROIy = 330;
+      
+      cvSetImageROI( imgHSV, cvRect(ROIx, ROIy, 150, 150));
+
+  //Initialize the threshold image ( imgThreshed ) to black
   for(int y = 0; y < imgThreshed->height; y++)
   {
     uchar* tempthreshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
@@ -94,9 +95,10 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
       tempthreshptr[x] = 0x00;
   }
   
-    int whitecount = 0;
-//     cout<<imgHSV->height<<endl;
-    for( int y=0; y<imgHSV->height; y++ ) 
+  
+  //Threshold the ROI and write to imgThreshed
+  int whitecount = 0;
+  for( int y=0; y<imgHSV->height; y++ ) 
   {
     uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
     uchar* threshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
@@ -121,7 +123,8 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
   }
   
   cvResetImageROI(imgHSV);
-//   cout<<"White: "<<whitecount<<endl;
+
+  //If object was detected in this ROI, return. Else threshold the entire image.
   if(whitecount > 5000)
     return;
   else
