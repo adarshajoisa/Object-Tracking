@@ -605,6 +605,9 @@ int main()
     }
     else break;
   }
+  int keyflag = 0;
+  cout<<"Keydown or keypress?(0 or 1) : ";
+  cin>>keyflag;
   if(choice == 1)
     cout<<"Starting mouse control"<<endl;
   else if(choice == 2)
@@ -643,6 +646,7 @@ int main()
   int left = 0, right = 0, up = 0, down = 0;
   char ch;
   sleep(1);
+
   while(true)
   {
     frame = cvQueryFrame(capture);
@@ -723,14 +727,20 @@ int main()
 	count ++;
 	left = 1;
 	system("xdotool keyup Right");
-	system("xdotool keydown Left");
+	if(keyflag == 0)
+	  system("xdotool keydown Left");
+	else
+	  system("xdotool key Left");
       }
       else if( posX > 390 )
       {
 	count ++;
 	right = 1;
 	system("xdotool keyup Left");
-	system("xdotool keydown Right");
+	if(keyflag == 0)
+	  system("xdotool keydown Right");
+	else
+	  system("xdotool key Right");
       }
       
       
@@ -746,14 +756,20 @@ int main()
 	count ++;
 	up = 1;
 	system("xdotool keyup Down");
-	system("xdotool keydown Up");
+	if(keyflag == 0)
+	  system("xdotool keydown Up");
+	else
+	  system("xdotool key Up");
       }
       else if( posY > 270 )
       {
 	count ++;
 	down = 1;
 	system("xdotool keyup Up");
-	system("xdotool keydown Down");
+	if(keyflag == 0)
+	  system("xdotool keydown Down");
+	else
+	  system("xdotool key Down");
       }
       
       cout<<"up = "<<up<<" down = "<<down<<" left = "<<left<<" right = "<<right<<" frame = "<<framecount<<endl;
