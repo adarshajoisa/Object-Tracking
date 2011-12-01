@@ -23,6 +23,7 @@ struct centroidposition
   centroidposition pos[10];
   int curtop = 0;
   const int qmaxlen = 10;
+  int fullcount = 0, partialcount = 0;
 
 using namespace std;
 
@@ -38,33 +39,54 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
   
   //Get the previous direction of object movement.
       int sidedirection = 0, updirection = 0;
+      int xIncrement = 0, yIncrement = 0;
       if( pos[(curtop + 4 ) % 10].x > pos[curtop].x + 5)
+      {
 	sidedirection = -1;
+	xIncrement = (pos[(curtop + 4) % 10].x - pos[curtop].x ) / 3;
+      }
       
       else if( pos[(curtop + 4 ) % 10].x < pos[curtop].x - 5)
+      {
 	sidedirection = 1;
+	xIncrement = (pos[curtop].x - pos[(curtop + 4) % 10].x) / 3;
+      }
       
-      else sidedirection = 0;
+      else 
+      {
+	sidedirection = 0;
+	xIncrement = 0;
+      }
 
       
       
       if( pos[(curtop + 4 ) % 10].y > pos[curtop].y + 5)
+      {
+	yIncrement = (pos[(curtop + 4) % 10].y - pos[curtop].y ) / 3;
 	updirection = 1;
+      }
       
       else if( pos[(curtop + 4 ) % 10].y < pos[curtop].y - 5)
+      {
+	yIncrement = (pos[curtop].y - pos[(curtop + 4) % 10].y) / 3;
 	updirection = -1;
+      }
       
-      else updirection = 0;
+      else 
+      {
+	updirection = 0;
+	yIncrement = 0;
+      }
   
   
   //Set ROI for thresholding based on the previous position and direction of movement
       int ROIx;
       if( sidedirection == 0)
-	ROIx = pos[curtop].x - 100;
+	ROIx = pos[curtop].x - (xIncrement - 100);
       else if(sidedirection == -1)
-	ROIx = pos[curtop].x - 130;
+	ROIx = pos[curtop].x - (xIncrement - 100);
       else
-	ROIx = pos[curtop].x - 75;
+	ROIx = pos[curtop].x - (xIncrement - 100);
       
       if(ROIx < 0)
 	ROIx = 0;
@@ -74,11 +96,11 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
       
       int ROIy;
       if( updirection == 0)
-	ROIy = pos[curtop].y - 100;
+	ROIy = pos[curtop].y - (yIncrement - 100);
       else if(updirection == -1)
-	ROIy = pos[curtop].y - 75;
+	ROIy = pos[curtop].y - (yIncrement - 100);
       else
-	ROIy = pos[curtop].y - 130;
+	ROIy = pos[curtop].y - (yIncrement - 100);
       
       if(ROIy < 0)
 	ROIy = 0;
@@ -107,9 +129,9 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
       int prevline = x - imgHSV->width;
       if( prevline < 0 )
 	prevline = 0;
-      if( (ptr[3*x] > (hsv_min.val[0] - 5) && ptr[3*x] < (hsv_max.val[0] + 5)) && 
-	  (ptr[3*x + 1] > (hsv_min.val[1] - 10) && ptr[3*x + 1] < (hsv_max.val[1] + 10)) &&
-	  (ptr[3*x + 2] > (hsv_min.val[2] - 10) && ptr[3*x + 2] < (hsv_max.val[2] + 10)))
+      if( (ptr[3*x] > hsv_min.val[0] && ptr[3*x] < hsv_max.val[0]) && 
+	  (ptr[3*x + 1] > hsv_min.val[1] && ptr[3*x + 1] < hsv_max.val[1]) &&
+	  (ptr[3*x + 2] > hsv_min.val[2] && ptr[3*x + 2] < hsv_max.val[2]))
       {
 	//threshold
 	threshptr[x] = 0xff;
@@ -122,18 +144,46 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
     }
   }
   
+  if(whitecount <  50 )
+  {
+    whitecount = 0;
+    for( int y=ROIy; y<(ROIy + 150); y++ ) 
+    {
+      uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
+      uchar* threshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
+      for( int x=ROIx; x<(ROIx + 150); x++ ) 
+      {
+	int prevline = x - imgHSV->width;
+	if( prevline < 0 )
+	  prevline = 0;
+	if( (ptr[3*x] > (hsv_min.val[0] - 5) && ptr[3*x] < (hsv_max.val[0] + 5)) && 
+	    (ptr[3*x + 1] > (hsv_min.val[1] - 10) && ptr[3*x + 1] < (hsv_max.val[1] + 10)) &&
+	    (ptr[3*x + 2] > (hsv_min.val[2] - 10) && ptr[3*x + 2] < (hsv_max.val[2] + 10)))
+	{
+	  //threshold
+	  threshptr[x] = 0xff;
+	  whitecount++;
+	}
+	else
+	{
+	  threshptr[x] = 0x00;
+	}
+      }
+    }
+  }
+  
   cvResetImageROI(imgHSV);
 //   cout<<whitecount<<endl;
 
   //If object was detected in this ROI, return. Else threshold the entire image.
-  if(whitecount > 100)
+  if(whitecount > 50)
   {
-    cout<<"Improved"<<endl;
+    partialcount++;
     return;
   }
   else
   {
-    cout<<"Old School"<<endl;
+    fullcount++;
     for( int y=0; y<imgThreshed->height; y++ ) 
     {
       uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
@@ -571,7 +621,11 @@ int main()
       cvCvtColor(frame, frame, CV_BGR2HSV);
       //drawing the yellow rectangle affects the color values in the ROI. So, drawing the rectangle just outside the ROI
       cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(0, 255, 255));
+      cvFlip(frame, frame, 1);
+      cvCvtColor(frame, frame, CV_HSV2BGR);
       cvShowImage("video", frame);
+      cvCvtColor(frame, frame, CV_BGR2HSV);
+      cvFlip(frame, frame, 1);
       int input = cvWaitKey(1);
 //       cout<<input<<endl;
       if((input % 256 )== 32)
@@ -714,8 +768,11 @@ int main()
 
     cvRectangle(frame, cvPoint(posX + 10, posY - 10), cvPoint(posX - 10, posY + 10), cvScalar(0, 255, 255));
 //     cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(40, 10, 255));
-    cvShowImage("thresh", imgThresh);
+//     cvShowImage("thresh", imgThresh);
+    cvFlip(frame, frame, 1);
+    cvCvtColor(frame, frame, CV_HSV2BGR);
     cvShowImage("video", frame);
+    cvFlip(frame, frame, 1);
 
     int c = cvWaitKey(10);
 
@@ -742,6 +799,10 @@ int main()
     delete moments;
 
   }
+  cout<<partialcount<<" frames have been processed using the optimized thresholding."<<endl;
+  cout<<fullcount<<" frames have been processed using full thresholding."<<endl;
+  double percentage = (float)((float)(partialcount)/(float)(partialcount + fullcount)) * 100;
+  cout<<percentage<<"% accuracy of position prediction."<<endl<<endl;
 //   system("clear");
   cvReleaseCapture(&capture);
 //   cvReleaseImage(&frame);
