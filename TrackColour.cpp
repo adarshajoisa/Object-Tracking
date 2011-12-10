@@ -28,8 +28,10 @@ struct centroidposition
 using namespace std;
 
 
-void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgThreshed)
+void InRangeS(IplImage * img, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgThreshed)
 {
+  IplImage* imgHSV = cvCreateImage(cvGetSize(img), 8, 3);
+  cvCvtColor(img, imgHSV, CV_BGR2HSV);
 //   imgThreshed = cvCreateImage(cvGetSize(imgHSV), 8, 1);
   if(imgHSV == NULL || imgThreshed == NULL)
   {
@@ -216,6 +218,7 @@ void InRangeS(IplImage * imgHSV, CvScalar hsv_min, CvScalar hsv_max, IplImage* i
       }
     }
   }
+  cvReleaseImage(&imgHSV);
 }
 
 
@@ -231,9 +234,12 @@ IplImage* GetThresholdedImage(IplImage* imgHSV, CvScalar hsv_min, CvScalar hsv_m
 
 
 
-void getHSVRanges(IplImage * frame, CvScalar *HSVranges)
+void getHSVRanges(IplImage * img, CvScalar *HSVranges)
 {
   
+  IplImage * frame = 0;
+  frame = cvCloneImage(img);
+  cvCvtColor(frame, frame, CV_BGR2HSV);
       cvSetImageROI(frame, cvRect(ROISTARTX, ROISTARTY, ROIHEIGHT, ROIWIDTH));
     
     IplImage *sub_img = cvCreateImageHeader(cvSize( ROIHEIGHT, ROIWIDTH ), frame->depth, frame->nChannels);
@@ -606,8 +612,8 @@ int main()
     else break;
   }
   int keyflag = 0;
-  cout<<"Keydown or keypress?(0 or 1) : ";
-  cin>>keyflag;
+//   cout<<"Keydown or keypress?(0 or 1) : ";
+//   cin>>keyflag;
   if(choice == 1)
     cout<<"Starting mouse control"<<endl;
   else if(choice == 2)
@@ -621,14 +627,14 @@ int main()
     {
       frame = cvQueryFrame(capture);
 //       IplImage* frame = cvCreateImage(cvGetSize(RGBframe), 8, 3);
-      cvCvtColor(frame, frame, CV_BGR2HSV);
+//       cvCvtColor(frame, frame, CV_BGR2HSV);
       //drawing the yellow rectangle affects the color values in the ROI. So, drawing the rectangle just outside the ROI
       cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(0, 255, 255));
-      cvFlip(frame, frame, 1);
-      cvCvtColor(frame, frame, CV_HSV2BGR);
+//       cvFlip(frame, frame, 1);
+//       cvCvtColor(frame, frame, CV_HSV2BGR);
       cvShowImage("video", frame);
-      cvCvtColor(frame, frame, CV_BGR2HSV);
-      cvFlip(frame, frame, 1);
+//       cvCvtColor(frame, frame, CV_BGR2HSV);
+//       cvFlip(frame, frame, 1);
       int input = cvWaitKey(1);
 //       cout<<input<<endl;
       if((input % 256 )== 32)
@@ -650,7 +656,7 @@ int main()
   while(true)
   {
     frame = cvQueryFrame(capture);
-    cvCvtColor(frame, frame, CV_BGR2HSV);
+//     cvCvtColor(frame, frame, CV_BGR2HSV);
     framecount++;
 
     if(!frame)
@@ -785,10 +791,10 @@ int main()
     cvRectangle(frame, cvPoint(posX + 10, posY - 10), cvPoint(posX - 10, posY + 10), cvScalar(0, 255, 255));
 //     cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(40, 10, 255));
 //     cvShowImage("thresh", imgThresh);
-    cvFlip(frame, frame, 1);
-    cvCvtColor(frame, frame, CV_HSV2BGR);
+//     cvFlip(frame, frame, 1);
+//     cvCvtColor(frame, frame, CV_HSV2BGR);
     cvShowImage("video", frame);
-    cvFlip(frame, frame, 1);
+//     cvFlip(frame, frame, 1);
 
     int c = cvWaitKey(10);
 
