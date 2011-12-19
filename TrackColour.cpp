@@ -24,6 +24,7 @@ struct centroidposition
   int curtop = 0;
   const int qmaxlen = 10;
   int fullcount = 0, partialcount = 0;
+  IplImage* frame = 0;
 
 using namespace std;
 
@@ -125,6 +126,7 @@ void InRangeS(IplImage * img, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgT
   for( int y=ROIy; y<(ROIy + 150); y++ ) 
   {
     uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
+    uchar* frameptr = (uchar*) ( frame->imageData + y * frame->widthStep );
     uchar* threshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
     for( int x=ROIx; x<(ROIx + 150); x++ ) 
     {
@@ -137,6 +139,9 @@ void InRangeS(IplImage * img, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgT
       {
 	//threshold
 	threshptr[x] = 0xff;
+	frameptr[3*x] = 0x00;
+	frameptr[3*x + 1] = 0x4d;
+	frameptr[3*x + 2] = 0x4d;
 	whitecount++;
       }
       else
@@ -152,6 +157,7 @@ void InRangeS(IplImage * img, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgT
     for( int y=ROIy; y<(ROIy + 150); y++ ) 
     {
       uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
+      uchar* frameptr = (uchar*) ( frame->imageData + y * frame->widthStep );
       uchar* threshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
       for( int x=ROIx; x<(ROIx + 150); x++ ) 
       {
@@ -164,6 +170,9 @@ void InRangeS(IplImage * img, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgT
 	{
 	  //threshold
 	  threshptr[x] = 0xff;
+	  frameptr[3*x] = 0x00;
+	  frameptr[3*x + 1] = 0x4d;
+	  frameptr[3*x + 2] = 0x4d;
 	  whitecount++;
 	}
 	else
@@ -189,6 +198,7 @@ void InRangeS(IplImage * img, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgT
     for( int y=0; y<imgThreshed->height; y++ ) 
     {
       uchar* ptr = (uchar*) ( imgHSV->imageData + y * imgHSV->widthStep );
+      uchar* frameptr = (uchar*) ( frame->imageData + y * frame->widthStep );
       uchar* threshptr = (uchar*) ( imgThreshed->imageData + y * imgThreshed->widthStep );
       for( int x=0; x<imgThreshed->width; x++ ) 
       {
@@ -210,6 +220,9 @@ void InRangeS(IplImage * img, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgT
 	{
 	  //threshold
 	  threshptr[x] = 0xff;
+	  frameptr[3*x] = 0x00;
+	  frameptr[3*x + 1] = 0x4d;
+	  frameptr[3*x + 2] = 0x4d;
 	}
 	else
 	{
@@ -621,7 +634,7 @@ int main()
   
   //The calibration code goes here.
     cvNamedWindow("video");
-    IplImage* frame = 0;
+//     IplImage* frame = 0;
     IplImage* RGBframe = 0;
     while(true)
     {
@@ -688,6 +701,16 @@ int main()
     pos[curtop].x = posX;
     pos[curtop].y = posY;
     curtop = (curtop + 1) % 10;
+    int posflag = 0;
+    if(
+	(pos[curtop].x - pos[(curtop + 9)%10].x < 5) &&
+	(pos[curtop].y - pos[(curtop + 9)%10].y < 5) &&
+	(pos[curtop].x - pos[(curtop + 8)%10].x < 5) &&
+	(pos[curtop].y - pos[(curtop + 8)%10].y < 5)/* &&
+	(pos[curtop].x - pos[(curtop + 7)%10].x < 5) &&
+	(pos[curtop].y - pos[(curtop + 7)%10].y < 5)*/
+      )
+      posflag = 1;
     
 //     cout<<posX<<" "<<posY<<endl;
    
@@ -711,9 +734,11 @@ int main()
 //     cvDestroyAllWindows();
     sprintf(command, "xdotool mousemove %d %d", (int)posX*2, (int) (posY*1.66)); //converting 640x480 into 1280x800
 //     cout<<posX<<"\t"<<posY<<endl;
-    if(choice == 1)
+    if(choice == 1 )
     {
-      system(command);
+      //The if condition is used to allow control with a physical mouse. But it degrades the performance for some reason. If the pointer is not moving properly, try commenting the below if condition. But physical mouse control will be disabled.
+      if(posflag == 0)
+	system(command);
     }
     else
     {
