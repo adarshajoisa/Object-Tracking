@@ -1,6 +1,6 @@
 Object Tracking based on color using OpenCV
 Author: Adarsha Joisa
-If you have downloaded the source code, please send me an email at adarshajoisa[at]gmail[dot]com. It'd help me keep track of the number of people using this too. :) I hope you enjoy it and improve it.
+If you have downloaded the source code, please send me an email at adarshajoisa[at]gmail[dot]com. It'd help me keep track of the number of people using this tool. :) I hope you enjoy it and improve it.
 
 This is a simple tool to track random colored objects using the computer's webcam. I've developed it on my laptop, so the default webcam has been used. If you are using a different(external) webcam,change the line: "capture = cvCaptureFromCAM(0);" by replacing the "0" with the appropirate index for your webcam.
 The algorithm for color detection is as follows:
