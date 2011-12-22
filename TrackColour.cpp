@@ -592,7 +592,7 @@ void getHSVRanges(IplImage * img, CvScalar *HSVranges)
 
 
 
-int main()
+int main(int argc, char** argv)
 {
   CvCapture* capture = 0;
   capture = cvCaptureFromCAM(0);	
@@ -607,23 +607,32 @@ int main()
     return -1;
   }
   
-  
   int choice;
-  cout<<"Keep the object to be tracked within the yellow square and hit Space.\nIt works best if the object fills the yellow square completely and if it is of a bright color.\nMake sure that there's no other object of the same color in the camera's field of view"<<endl<<endl;
-  cout<<"What do you want to do?"<<endl;
-  cout<<"1. Control the mouse."<<endl;
-  cout<<"2. Control arrow keys."<<endl;
   
-  while(1)
+  if(argv[1][1] == 'm')
+    choice = 1;
+  else if(argv[1][1] == 'k')
+    choice = 2;
+  else
   {
-    cout<<"Enter your choice: ";
-    cin>>choice;
-    if( choice < 1 || choice > 2 )
-    {
-      cout<<"Invalid output. Try again."<<endl;
-    }
-    else break;
+    cout<<"Usage: track -m|-k"<<endl;
+    exit(0);
   }
+  cout<<"Keep the object to be tracked within the yellow square and hit Space.\nIt works best if the object fills the yellow square completely and if it is of a bright color.\nMake sure that there's no other object of the same color in the camera's field of view"<<endl<<endl;
+//   cout<<"What do you want to do?"<<endl;
+//   cout<<"1. Control the mouse."<<endl;
+//   cout<<"2. Control arrow keys."<<endl;
+//   
+//   while(1)
+//   {
+//     cout<<"Enter your choice: ";
+//     cin>>choice;
+//     if( choice < 1 || choice > 2 )
+//     {
+//       cout<<"Invalid output. Try again."<<endl;
+//     }
+//     else break;
+//   }
   int keyflag = 0;
 //   cout<<"Keydown or keypress?(0 or 1) : ";
 //   cin>>keyflag;
