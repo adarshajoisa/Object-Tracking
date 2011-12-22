@@ -43,16 +43,16 @@ void InRangeS(IplImage * img, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgT
   //Get the previous direction of object movement.
       int sidedirection = 0, updirection = 0;
       int xIncrement = 0, yIncrement = 0;
-      if( pos[(curtop + 4 ) % 10].x > pos[curtop].x + 5)
+      if( pos[(curtop + 5 ) % 10].x > pos[curtop].x + 5)
       {
 	sidedirection = -1;
-	xIncrement = (pos[(curtop + 4) % 10].x - pos[curtop].x ) / 3;
+	xIncrement = (pos[(curtop + 4) % 10].x - pos[curtop].x ) / 5;
       }
       
-      else if( pos[(curtop + 4 ) % 10].x < pos[curtop].x - 5)
+      else if( pos[(curtop + 5 ) % 10].x < pos[curtop].x - 5)
       {
 	sidedirection = 1;
-	xIncrement = (pos[curtop].x - pos[(curtop + 4) % 10].x) / 3;
+	xIncrement = (pos[curtop].x - pos[(curtop + 4) % 10].x) / 5;
       }
       
       else 
@@ -63,15 +63,15 @@ void InRangeS(IplImage * img, CvScalar hsv_min, CvScalar hsv_max, IplImage* imgT
 
       
       
-      if( pos[(curtop + 4 ) % 10].y > pos[curtop].y + 5)
+      if( pos[(curtop + 5 ) % 10].y > pos[curtop].y + 5)
       {
-	yIncrement = (pos[(curtop + 4) % 10].y - pos[curtop].y ) / 3;
+	yIncrement = (pos[(curtop + 4) % 10].y - pos[curtop].y ) / 5;
 	updirection = 1;
       }
       
-      else if( pos[(curtop + 4 ) % 10].y < pos[curtop].y - 5)
+      else if( pos[(curtop + 5 ) % 10].y < pos[curtop].y - 5)
       {
-	yIncrement = (pos[curtop].y - pos[(curtop + 4) % 10].y) / 3;
+	yIncrement = (pos[curtop].y - pos[(curtop + 4) % 10].y) / 5;
 	updirection = -1;
       }
       
@@ -619,20 +619,7 @@ int main(int argc, char** argv)
     exit(0);
   }
   cout<<"Keep the object to be tracked within the yellow square and hit Space.\nIt works best if the object fills the yellow square completely and if it is of a bright color.\nMake sure that there's no other object of the same color in the camera's field of view"<<endl<<endl;
-//   cout<<"What do you want to do?"<<endl;
-//   cout<<"1. Control the mouse."<<endl;
-//   cout<<"2. Control arrow keys."<<endl;
-//   
-//   while(1)
-//   {
-//     cout<<"Enter your choice: ";
-//     cin>>choice;
-//     if( choice < 1 || choice > 2 )
-//     {
-//       cout<<"Invalid output. Try again."<<endl;
-//     }
-//     else break;
-//   }
+
   int keyflag = 0;
 //   cout<<"Keydown or keypress?(0 or 1) : ";
 //   cin>>keyflag;
@@ -643,22 +630,16 @@ int main(int argc, char** argv)
   
   //The calibration code goes here.
     cvNamedWindow("video");
-//     IplImage* frame = 0;
     IplImage* RGBframe = 0;
     while(true)
     {
       frame = cvQueryFrame(capture);
-//       IplImage* frame = cvCreateImage(cvGetSize(RGBframe), 8, 3);
-//       cvCvtColor(frame, frame, CV_BGR2HSV);
       //drawing the yellow rectangle affects the color values in the ROI. So, drawing the rectangle just outside the ROI
       cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(0, 255, 255));
-//       cvFlip(frame, frame, 1);
-//       cvCvtColor(frame, frame, CV_HSV2BGR);
+      cvFlip(frame, frame, 1);
       cvShowImage("video", frame);
-//       cvCvtColor(frame, frame, CV_BGR2HSV);
-//       cvFlip(frame, frame, 1);
+      cvFlip(frame, frame, 1);
       int input = cvWaitKey(1);
-//       cout<<input<<endl;
       if((input % 256 )== 32)
 	break;
     }
@@ -678,7 +659,7 @@ int main(int argc, char** argv)
   while(true)
   {
     frame = cvQueryFrame(capture);
-//     cvCvtColor(frame, frame, CV_BGR2HSV);
+    cvFlip(frame, frame, 1);	//To get a mirror image
     framecount++;
 
     if(!frame)
@@ -711,25 +692,26 @@ int main(int argc, char** argv)
     pos[curtop].y = posY;
     curtop = (curtop + 1) % 10;
     int posflag = 0;
+    posflag = 0;
     if(
-	((pos[curtop].x - pos[(curtop + 9)%10].x < 5) || ( pos[(curtop + 9)%10].x - pos[curtop].x < 5) )&&
-	((pos[curtop].y - pos[(curtop + 9)%10].y < 5) || ( pos[(curtop + 9)%10].y - pos[curtop].y < 5) )&&
-	((pos[curtop].x - pos[(curtop + 8)%10].x < 5) || ( pos[(curtop + 8)%10].x - pos[curtop].x < 5) )&&
-	((pos[curtop].y - pos[(curtop + 8)%10].y < 5) || ( pos[(curtop + 8)%10].y - pos[curtop].y < 5) )&&
-	((pos[curtop].x - pos[(curtop + 7)%10].x < 5) || ( pos[(curtop + 7)%10].x - pos[curtop].x < 5) )&&
-	((pos[curtop].y - pos[(curtop + 7)%10].y < 5) || ( pos[(curtop + 7)%10].y - pos[curtop].y < 5) )
+	(((posX - pos[(curtop + 8)%10].x) < 3) && ((posX - pos[(curtop + 8)%10].x) > -3)) && 
+	(((posY - pos[(curtop + 8)%10].y) < 3) && ((posY - pos[(curtop + 8)%10].y) > -3)) &&
+	(((posX - pos[(curtop + 7)%10].x) < 3) && ((posX - pos[(curtop + 7)%10].x) > -3)) &&
+	(((posY - pos[(curtop + 7)%10].y) < 3) && ((posY - pos[(curtop + 7)%10].y) > -3)) && 
+	(((posX - pos[(curtop + 6)%10].x) < 3) && ((posX - pos[(curtop + 6)%10].x) > -3)) &&
+	(((posY - pos[(curtop + 6)%10].y) < 3) && ((posY - pos[(curtop + 6)%10].y) > -3))
       )
+    {
       posflag = 1;
+    }
     
-//     cout<<posX<<" "<<posY<<endl;
+      
    
     if(posX <= 0)
       posX = lastX;
     if(posY <= 0)
       posY = lastY;
  
-    //invert the sideways movement to get a mirror image of movement
-    posX = 640 - posX;		//the camera doesn't give a mirror image. We need a mirror image to get the left-right directions correct.
 
     char command[50], clickcmd[50];
     
@@ -740,13 +722,14 @@ int main(int argc, char** argv)
 //     else
 //       strcpy(clickcmd,"xdotool mouseup 1");
     
-//     cvDestroyAllWindows();
+    cvDestroyAllWindows();
     sprintf(command, "xdotool mousemove %d %d", (int)posX*2, (int) (posY*1.66)); //converting 640x480 into 1280x800
-//     cout<<posX<<"\t"<<posY<<endl;
+
+    
     if(choice == 1 )
     {
-      //The if condition is used to allow control with a physical mouse. But it degrades the performance for some reason. If the pointer is not moving properly, try commenting the below if condition to disable physical mouse control.
-//       if(posflag == 0)
+      //Comment the below if condition to disable physical mouse control.
+      if(posflag == 0)
 	system(command);
     }
     else
@@ -819,24 +802,18 @@ int main(int argc, char** argv)
      * Center of the screen is somewhere around (270,210). Now the movement can be controlled by comparing current position with the approximate center value.
      */
 
-    //Invert the positions again to get the rectangle around the cap in the output video
-    posX = 640 - posX;
 
     cvRectangle(frame, cvPoint(posX + 10, posY - 10), cvPoint(posX - 10, posY + 10), cvScalar(0, 255, 255));
-//     cvRectangle(frame, cvPoint(ROISTARTX - 1, ROISTARTY - 1), cvPoint(ROIENDX + 1, ROIENDY + 1), cvScalar(40, 10, 255));
 //     cvShowImage("thresh", imgThresh);
-//     cvFlip(frame, frame, 1);
-//     cvCvtColor(frame, frame, CV_HSV2BGR);
-    cvShowImage("video", frame);
-//     cvFlip(frame, frame, 1);
+//     cvShowImage("video", frame);
 
     int c = cvWaitKey(10);
 
     if(c!=-1)
     {
-      if( (c % 256) == 27 )// || c == 1048603 || c == 1179675)
+      if( (c % 256) == 27 )
 	break;
-      if( (c % 256) == ' ' )// || c == 1048608 || c == 1179680)
+      if( (c % 256) == ' ' )
       {
 	CvScalar TestHSVranges[2];
 	getHSVRanges(frame, TestHSVranges);
@@ -855,7 +832,7 @@ int main(int argc, char** argv)
     delete moments;
 
   }
-  cout<<partialcount<<" frames have been processed using the optimized thresholding."<<endl;
+  cout<<endl<<partialcount<<" frames have been processed using the optimized thresholding."<<endl;
   cout<<fullcount<<" frames have been processed using full thresholding."<<endl;
   double percentage = (float)((float)(partialcount)/(float)(partialcount + fullcount)) * 100;
   cout<<percentage<<"% accuracy of position prediction."<<endl<<endl;
