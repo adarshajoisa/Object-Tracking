@@ -703,12 +703,12 @@ int main()
     curtop = (curtop + 1) % 10;
     int posflag = 0;
     if(
-	(pos[curtop].x - pos[(curtop + 9)%10].x < 5) &&
-	(pos[curtop].y - pos[(curtop + 9)%10].y < 5) &&
-	(pos[curtop].x - pos[(curtop + 8)%10].x < 5) &&
-	(pos[curtop].y - pos[(curtop + 8)%10].y < 5)/* &&
-	(pos[curtop].x - pos[(curtop + 7)%10].x < 5) &&
-	(pos[curtop].y - pos[(curtop + 7)%10].y < 5)*/
+	((pos[curtop].x - pos[(curtop + 9)%10].x < 5) || ( pos[(curtop + 9)%10].x - pos[curtop].x < 5) )&&
+	((pos[curtop].y - pos[(curtop + 9)%10].y < 5) || ( pos[(curtop + 9)%10].y - pos[curtop].y < 5) )&&
+	((pos[curtop].x - pos[(curtop + 8)%10].x < 5) || ( pos[(curtop + 8)%10].x - pos[curtop].x < 5) )&&
+	((pos[curtop].y - pos[(curtop + 8)%10].y < 5) || ( pos[(curtop + 8)%10].y - pos[curtop].y < 5) )&&
+	((pos[curtop].x - pos[(curtop + 7)%10].x < 5) || ( pos[(curtop + 7)%10].x - pos[curtop].x < 5) )&&
+	((pos[curtop].y - pos[(curtop + 7)%10].y < 5) || ( pos[(curtop + 7)%10].y - pos[curtop].y < 5) )
       )
       posflag = 1;
     
@@ -737,7 +737,7 @@ int main()
     if(choice == 1 )
     {
       //The if condition is used to allow control with a physical mouse. But it degrades the performance for some reason. If the pointer is not moving properly, try commenting the below if condition. But physical mouse control will be disabled.
-      if(posflag == 0)
+//       if(posflag == 0)
 	system(command);
     }
     else
