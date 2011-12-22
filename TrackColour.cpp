@@ -805,6 +805,8 @@ int main(int argc, char** argv)
 
     cvRectangle(frame, cvPoint(posX + 10, posY - 10), cvPoint(posX - 10, posY + 10), cvScalar(0, 255, 255));
 //     cvShowImage("thresh", imgThresh);
+    
+    //Uncomment the below line to see the webcam video during tracking
 //     cvShowImage("video", frame);
 
     int c = cvWaitKey(10);
