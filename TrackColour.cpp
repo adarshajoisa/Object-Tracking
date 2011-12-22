@@ -736,7 +736,7 @@ int main()
 //     cout<<posX<<"\t"<<posY<<endl;
     if(choice == 1 )
     {
-      //The if condition is used to allow control with a physical mouse. But it degrades the performance for some reason. If the pointer is not moving properly, try commenting the below if condition. But physical mouse control will be disabled.
+      //The if condition is used to allow control with a physical mouse. But it degrades the performance for some reason. If the pointer is not moving properly, try commenting the below if condition to disable physical mouse control.
 //       if(posflag == 0)
 	system(command);
     }
