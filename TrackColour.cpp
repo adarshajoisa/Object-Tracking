@@ -724,14 +724,16 @@ int main(int argc, char** argv)
 //       strcpy(clickcmd,"xdotool mouseup 1");
     
     cvDestroyAllWindows();
-    sprintf(command, "xdotool mousemove %d %d", (int)posX*2, (int) (posY*1.66)); //converting 640x480 into 1280x800
+    //The below sprintf is to be used if running in linux. You need to install a utility called xdotool to use this
+    //sprintf(command, "xdotool mousemove %d %d", (int)posX*2, (int) (posY*1.66)); //converting 640x480 into 1280x800
 
     
     if(choice == 1 )
     {
       //Comment the below if condition to disable physical mouse control.
       if(posflag == 0)
-	system(command);
+	//system(command);
+	SetCursorPos((int)posX*2, (int) (posY * 1.66));
     }
     else
     {
