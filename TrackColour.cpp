@@ -615,8 +615,9 @@ int main(int argc, char** argv)
     choice = 2;
   else
   {
-    cout<<"Usage: track -m|-k"<<endl;
-    exit(0);
+  	choice = 1;
+    //cout<<"Usage: track -m|-k"<<endl;
+    //exit(0);
   }
   cout<<"Keep the object to be tracked within the yellow square and hit Space.\nIt works best if the object fills the yellow square completely and if it is of a bright color.\nMake sure that there's no other object of the same color in the camera's field of view"<<endl<<endl;
 
